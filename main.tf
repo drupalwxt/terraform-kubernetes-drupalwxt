@@ -25,7 +25,7 @@ resource "helm_release" "drupalwxt" {
   depends_on = ["null_resource.wait-dependencies", "null_resource.dependency_getter"]
   name = "drupalwxt"
   repository = "${var.helm_repository}"
-  chart = "drupalwxt"
+  chart = "drupal"
   version = "${var.chart_version}"
   namespace = "${var.helm_namespace}"
   timeout = 1200
