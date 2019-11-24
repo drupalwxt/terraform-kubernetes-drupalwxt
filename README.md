@@ -20,7 +20,7 @@ The following security controls can be met through configuration of this templat
 module "helm_drupalwxt" {
   source = "github.com/drupalwxt/terraform-kubernetes-drupalwxt?ref=20190909.1"
 
-  chart_version = "0.1.7"
+  chart_version = "0.1.8"
   dependencies = [
     "${module.namespace_default.depended_on}",
   ]
