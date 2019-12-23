@@ -9,6 +9,12 @@ resource "null_resource" "dependency_getter" {
   triggers = {
     my_dependencies = "${join(",", var.dependencies)}"
   }
+
+  lifecycle {
+    ignore_changes = [
+      triggers["my_dependencies"],
+    ]
+  }
 }
 
 resource "null_resource" "wait-dependencies" {
