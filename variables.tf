@@ -1,11 +1,11 @@
 variable "enable_azurefile" {
   default = "0"
-  type = "string"
+  type    = "string"
 }
 
 variable "azurefile_location_name" {
   default = "canadacentral"
-  type = "string"
+  type    = "string"
 }
 
 variable "azurefile_storage_account_name" {
@@ -26,5 +26,5 @@ variable "dependencies" {
 
 variable "values" {
   default = ""
-  type = "string"
+  type    = "string"
 }

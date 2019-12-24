@@ -29,7 +29,7 @@ resource "null_resource" "wait-dependencies" {
 
 resource "local_file" "storageclass_azurefile" {
   content = "${templatefile("${path.module}/config/azurefile.yaml", {
-    azurefile_location_name = "${var.azurefile_location_name}"
+    azurefile_location_name        = "${var.azurefile_location_name}"
     azurefile_storage_account_name = "${var.azurefile_storage_account_name}"
   })}"
 
@@ -45,11 +45,11 @@ resource "null_resource" "storageclass_azurefile" {
 }
 
 resource "helm_release" "drupalwxt" {
-  version = "${var.chart_version}"
-  name = "drupalwxt"
-  chart = "drupal"
+  version    = "${var.chart_version}"
+  name       = "drupalwxt"
+  chart      = "drupal"
   repository = "${var.helm_repository}"
-  namespace = "${var.helm_namespace}"
+  namespace  = "${var.helm_namespace}"
 
   timeout = 2400
 
