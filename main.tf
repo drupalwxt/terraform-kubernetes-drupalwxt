@@ -17,16 +17,6 @@ resource "null_resource" "dependency_getter" {
   }
 }
 
-resource "null_resource" "wait-dependencies" {
-  provisioner "local-exec" {
-    command = "helm ls --tiller-namespace ${var.helm_namespace}"
-  }
-
-  depends_on = [
-    "null_resource.dependency_getter",
-  ]
-}
-
 resource "local_file" "storageclass_azurefile" {
   content = "${templatefile("${path.module}/config/azurefile.yaml", {
     azurefile_location_name        = "${var.azurefile_location_name}"
@@ -58,7 +48,6 @@ resource "helm_release" "drupalwxt" {
   ]
 
   depends_on = [
-    "null_resource.wait-dependencies",
     "null_resource.dependency_getter",
     "null_resource.storageclass_azurefile"
   ]

@@ -9,10 +9,9 @@ variable "azurefile_location_name" {
 }
 
 variable "azurefile_storage_account_name" {
+  default = ""
   type = "string"
 }
-
-variable "helm_service_account" {}
 
 variable "helm_namespace" {}
 
