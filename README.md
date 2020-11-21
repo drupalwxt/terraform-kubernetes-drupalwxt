@@ -53,7 +53,7 @@ ingress:
   #      - chart-example.local
 
 drupal:
-  tag: 3.0.17
+  tag: 4.0.0-rc1
 
   ## User of the application
   ##
@@ -109,7 +109,7 @@ drupal:
       mountPath: /var/www/private
 
 nginx:
-  tag: 3.0.17-nginx
+  tag: 4.0.0-rc1-nginx
 
   # Set your cluster's DNS resolution service here
   resolver: 10.0.0.10
