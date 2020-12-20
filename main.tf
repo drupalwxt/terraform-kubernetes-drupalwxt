@@ -17,27 +17,12 @@ resource "null_resource" "dependency_getter" {
   }
 }
 
-resource "local_file" "storageclass_azurefile" {
-  content = "${templatefile("${path.module}/config/azurefile.yaml", {
-    azurefile_location_name        = "${var.azurefile_location_name}"
-    azurefile_storage_account_name = "${var.azurefile_storage_account_name}"
-  })}"
-
-  filename = "${path.module}/generated/azurefile.yaml"
-}
-
-resource "null_resource" "storageclass_azurefile" {
-  count = "${var.enable_azurefile ? 1 : 0}"
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f ${local_file.storageclass_azurefile.filename}"
-  }
-}
-
 resource "helm_release" "drupalwxt" {
   version    = "${var.chart_version}"
+
   name       = "drupalwxt"
   chart      = "drupal"
+
   repository = "${var.helm_repository}"
   namespace  = "${var.helm_namespace}"
 
@@ -48,8 +33,7 @@ resource "helm_release" "drupalwxt" {
   ]
 
   depends_on = [
-    "null_resource.dependency_getter",
-    "null_resource.storageclass_azurefile"
+    "null_resource.dependency_getter"
   ]
 }
 

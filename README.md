@@ -1,4 +1,4 @@
-# Terraform Kubernetes DrupalWxT
+# Terraform Kubernetes for Drupal WxT
 
 ## Introduction
 
@@ -14,7 +14,7 @@ The following security controls can be met through configuration of this templat
 
 * None
 
-## Optional (depending on options configured):
+## Optional (depending on options configured)
 
 * None
 
@@ -24,36 +24,40 @@ The following security controls can be met through configuration of this templat
 module "helm_drupalwxt" {
   source = "git::https://github.com/drupalwxt/terraform-kubernetes-drupalwxt.git"
 
-  chart_version = "0.2.2"
+  chart_version = "0.6.8"
   dependencies = [
-    "${module.namespace_drupal.depended_on}",
+    module.namespace_drupal.depended_on,
+    module.drupal_database.depended_on,
   ]
 
-  helm_service_account = "tiller"
-  helm_namespace = "drupal"
-  helm_repository = "drupalwxt"
-
-  enable_azurefile = "${var.enable_azurefile}"
-  azurefile_location_name = "${var.azurefile_location_name}"
-  azurefile_storage_account_name = "${var.azurefile_storage_account_name}"
+  helm_namespace  = "drupal"
+  helm_repository = "https://drupalwxt.github.io/helm-drupal"
 
   values = <<EOF
 ingress:
   enabled: true
   annotations:
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
     kubernetes.io/ingress.class: istio
   path: /*
   hosts:
-    - drupalwxt.${var.ingress_domain}
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+    - drupal.${var.ingress_domain}
 
 drupal:
+  ## Drupal image version
+  ## ref: https://hub.docker.com/drupalwxt/site-wxt/tags/
+  ##
+  image: drupalwxt/site-wxt
+
+  ## Note that by default we use appVersion to get image tag
   tag: 4.0.0-rc3
+
+  ## Site configuration
+  ##
+  profile: wxt
+  siteEmail: admin@example.com
+  siteName: Drupal Install Profile (WxT)
 
   ## User of the application
   ##
@@ -61,7 +65,7 @@ drupal:
 
   ## Application password
   ##
-  password: Password2019
+  password: ${var.drupal_password}
 
   # php-fpm healthcheck
   # Requires https://github.com/renatomefi/php-fpm-healthcheck in the container.
@@ -69,24 +73,36 @@ drupal:
   healthcheck:
     enabled: true
 
-  # Switch to canada.ca theme
+  # Switch to canada.ca theme (only used if install and/or reconfigure are enabled)
   # Common options include: theme-wet-boew, theme-gcweb-legacy
   wxtTheme: theme-gcweb
 
   ## Extra settings.php settings
   ##
-  extraSettings: ''
-  #  |-
-  #  $settings['trusted_host_patterns'] = ['^example\.com$'];
+  extraSettings: |-
+    $settings['trusted_host_patterns'] = ['^drupal\.example\.ca$', '^drupalwxt-nginx$'];
 
-  # Run the site install
+  ## Extra CLI scripts
+  ##
+  extraInstallScripts: ''
+  #  |-
+  #  drush config-set system.performance js.preprocess 0 -y;
+  #  drush config-set system.performance css.preprocess 0 -y;
+
+  # Install Drupal automatically
   install: true
 
-  # Run the default migrations
+  # Run migrations for default content
   migrate: true
 
-  # Reconfigure the site
+  # Reconfigure on upgrade
   reconfigure: true
+
+  # php-fpm healthcheck
+  # Requires https://github.com/renatomefi/php-fpm-healthcheck in the container.
+  # (note: official images do not contain this feature yet)
+  healthcheck:
+    enabled: true
 
   # Allows custom /var/www/html/sites/default/files and /var/www/private mounts
   disableDefaultFilesMount: true
@@ -108,8 +124,20 @@ drupal:
     - name: files-private
       mountPath: /var/www/private
 
+  initContainers:
+    # Pre-create the media-icons folder
+    - name: init-media-icons-folder
+      image: alpine:3.10
+      command:
+        - mkdir
+        - -p
+        - /files/media-icons/generic
+      volumeMounts:
+        - name: files-public
+          mountPath: /files
+
 nginx:
-  tag: 4.0.0-rc3-nginx
+  tag: 4.0.0-rc3
 
   # Set your cluster's DNS resolution service here
   resolver: 10.0.0.10
@@ -125,67 +153,39 @@ nginx:
     - name: files-public
       mountPath: /var/www/html/sites/default/files
 
-mysql:
-  imageTag: 5.7.28
+external:
+  enabled: true
+  driver: pgsql
+  port: 5432
+  host: 127.0.0.1
+  database: drupal
+  user: ${module.drupal_database.administrator_login}@${module.drupal_database.name}
+  password: ${var.managed_postgresql_password}
 
-  mysqlPassword: SUPERsecureMYSQLpassword
-  mysqlRootPassword: SUPERsecureMYSQLrootPASSWORD
-  persistence:
-    enabled: true
-    storageClass: managed-premium
-    size: 256Gi
-
-  # Custom mysql configuration files used to override default mysql settings
-  configurationFiles:
-   mysql.cnf: |-
-     [mysqld]
-     max_allowed_packet = 256M
-     innodb_buffer_pool_size = 4096M
-     innodb_buffer_pool_instances = 4
-     table_definition_cache = 4096
-     table_open_cache = 8192
-     innodb_flush_log_at_trx_commit=2
-
-##
-## MINIO-ONLY EXAMPLE
-##
-minio:
-  enabled: false
-
-##
-## AZURE EXAMPLE
-##
-# files:
-#   cname:
-#     enabled: true
-#     hostname: wxt.blob.core.windows.net
 files:
   provider: none
 
-# minio:
-#   clusterDomain: cluster.cumulonimbus.zacharyseguin.ca
-#   # Enable the Azure Gateway mode
-#   azuregateway:
-#     enabled: true
+minio:
+  enabled: false
 
-#   # Access Key should be set to the Azure Storage Account name
-#   # Secret Key should be set to the Azure Storage Account access key
-#   accessKey: STORAGE_ACCOUNT_NAME
-#   secretKey: STORAGE_ACCOUNT_ACCESS_KEY
+mysql:
+  enabled: false
 
-#   # Disable creation of default bucket.
-#   # You should pre-create the bucket in Azure.
-#   defaultBucket:
-#     enabled: false
-#     name: wxt
+postgresql:
+  enabled: false
+  pgbouncer:
+    enabled: true
+    host: ${module.drupal_database.name}.postgres.database.azure.com
+    user: ${module.drupal_database.administrator_login}@${module.drupal_database.name}
+    password: ${var.managed_postgresql_password}
+    poolSize: 25
+    maxClientConnections: 500
 
-#   # We want a cluster ip assigned
-#   service:
-#     clusterIP: ''
+redis:
+  enabled: true
 
-#   # We don't need a persistent volume, since it's stored in Azure
-#   persistence:
-#     enabled: false
+varnish:
+  enabled: true
 EOF
 }
 ```
@@ -196,7 +196,6 @@ EOF
 | -------------------- | ------ | -------- | --------------------------------------------------- |
 | chart_version        | string | yes      | Version of the Helm Chart                           |
 | dependencies         | string | yes      | Dependency name refering to namespace module        |
-| helm_service_account | string | yes      | The service account for Helm to use                 |
 | helm_namespace       | string | yes      | The namespace Helm will install the chart under     |
 | helm_repository      | string | yes      | The repository where the Helm chart is stored       |
 | values               | list   | no       | Values to be passed to the Helm Chart               |
@@ -205,5 +204,5 @@ EOF
 
 | Date     | Release    | Change                                                     |
 | -------- | ---------- | ---------------------------------------------------------- |
-| 20190729 | 20190729.1 | Improvements to documentation and formatting               |
 | 20190909 | 20190909.1 | 1st release                                                |
+| 20191220 | 20191220.1 | Updates to specification as Azure File is now in chart     |
