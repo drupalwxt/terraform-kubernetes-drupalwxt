@@ -5,6 +5,8 @@ variable "dependencies" {
   type = "list"
 }
 
+variable "helm_chart" {}
+
 variable "helm_namespace" {}
 
 variable "helm_repository" {}

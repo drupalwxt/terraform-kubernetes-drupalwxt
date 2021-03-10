@@ -21,7 +21,7 @@ resource "helm_release" "drupalwxt" {
   version    = "${var.chart_version}"
 
   name       = "drupalwxt"
-  chart      = "drupal"
+  chart      = "${var.helm_chart}"
 
   repository = "${var.helm_repository}"
   namespace  = "${var.helm_namespace}"
