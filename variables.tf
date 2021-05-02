@@ -7,6 +7,11 @@ variable "dependencies" {
 
 variable "helm_chart" {}
 
+variable "helm_name" {
+  default = "drupalwxt"
+  type    = "string"
+}
+
 variable "helm_namespace" {}
 
 variable "helm_repository" {}

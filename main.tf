@@ -20,7 +20,7 @@ resource "null_resource" "dependency_getter" {
 resource "helm_release" "drupalwxt" {
   version    = "${var.chart_version}"
 
-  name       = "drupalwxt"
+  name       = "${var.helm_name}"
   chart      = "${var.helm_chart}"
 
   repository = "${var.helm_repository}"
