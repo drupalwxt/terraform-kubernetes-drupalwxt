@@ -1,15 +1,11 @@
 
 variable "chart_version" {}
 
-variable "dependencies" {
-  type = "list"
-}
-
 variable "helm_chart" {}
 
 variable "helm_name" {
   default = "drupalwxt"
-  type    = "string"
+  type    = string
 }
 
 variable "helm_namespace" {}
@@ -18,5 +14,5 @@ variable "helm_repository" {}
 
 variable "values" {
   default = ""
-  type    = "string"
+  type    = string
 }

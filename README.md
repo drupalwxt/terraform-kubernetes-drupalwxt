@@ -8,15 +8,15 @@ This module deploys and configures Drupal WxT inside a Kubernetes Cluster.
 
 The following security controls can be met through configuration of this template:
 
-* TBD
+- TBD
 
 ## Dependencies
 
-* None
+- None
 
 ## Optional (depending on options configured)
 
-* None
+- None
 
 ## Usage
 
@@ -25,9 +25,9 @@ module "helm_drupalwxt" {
   source = "git::https://github.com/drupalwxt/terraform-kubernetes-drupalwxt.git"
 
   chart_version = "0.6.8"
-  dependencies = [
-    module.namespace_drupal.depended_on,
-    module.drupal_database.depended_on,
+  depends_on = [
+    module.namespace_drupal,
+    module.drupal_database,
   ]
 
   helm_namespace  = "drupal"
@@ -192,17 +192,17 @@ EOF
 
 ## Variables Values
 
-| Name                 | Type   | Required | Value                                               |
-| -------------------- | ------ | -------- | --------------------------------------------------- |
-| chart_version        | string | yes      | Version of the Helm Chart                           |
-| dependencies         | string | yes      | Dependency name refering to namespace module        |
-| helm_namespace       | string | yes      | The namespace Helm will install the chart under     |
-| helm_repository      | string | yes      | The repository where the Helm chart is stored       |
-| values               | list   | no       | Values to be passed to the Helm Chart               |
+| Name            | Type   | Required | Value                                           |
+| --------------- | ------ | -------- | ----------------------------------------------- |
+| chart_version   | string | yes      | Version of the Helm Chart                       |
+| helm_namespace  | string | yes      | The namespace Helm will install the chart under |
+| helm_repository | string | yes      | The repository where the Helm chart is stored   |
+| values          | list   | no       | Values to be passed to the Helm Chart           |
 
 ## History
 
-| Date     | Release    | Change                                                     |
-| -------- | ---------- | ---------------------------------------------------------- |
-| 20190909 | 20190909.1 | 1st release                                                |
-| 20191220 | 20191220.1 | Updates to specification as Azure File is now in chart     |
+| Date     | Release    | Change                                                 |
+| -------- | ---------- | ------------------------------------------------------ |
+| 20210829 | 20210829.1 | Update to latest Terraform compatibility 1.0.x         |
+| 20190909 | 20190909.1 | 1st release                                            |
+| 20191220 | 20191220.1 | Updates to specification as Azure File is now in chart |

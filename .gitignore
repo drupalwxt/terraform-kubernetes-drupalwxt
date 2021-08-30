@@ -1,6 +1,7 @@
 kubeconfig
 plan
-**/.terraform/*
-.terraform/plugins
+.terraform
+*.lock.hcl
 *.tfstate
 *.tfstate.backup
+terraform.tfvars
