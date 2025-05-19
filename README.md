@@ -51,7 +51,7 @@ drupal:
   image: drupalwxt/site-wxt
 
   ## Note that by default we use appVersion to get image tag
-  tag: 5.4.1
+  tag: 5.4.2
 
   ## Site configuration
   ##
@@ -137,7 +137,7 @@ drupal:
           mountPath: /files
 
 nginx:
-  tag: 5.4.1
+  tag: 5.4.2
 
   # Set your cluster's DNS resolution service here
   resolver: 10.0.0.10
